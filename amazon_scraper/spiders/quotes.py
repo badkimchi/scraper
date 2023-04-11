@@ -13,11 +13,18 @@ class AmazonSpider(scrapy.Spider):
         'PLAYWRIGHT_ABORT_REQUEST': should_abort_request
     }
 
+    def __init__ (self, keyword = '', *args, **kwargs):
+        super(AmazonSpider, self).__init__(*args, **kwargs)
+        self.keyword = keyword
+
     def start_requests(self):
-        url = "https://www.amazon.com/s?k=vitamin+c&s=exact-aware-popularity-rank&page=1"
+        keyword = 'vitamin c'
+        if len(self.keyword) > 0:
+            keyword = self.keyword
+        url = f'https://www.amazon.com/s?k={keyword}&s=exact-aware-popularity-rank&page=1'
         yield scrapy.Request(url, meta={'playwright': True})
 
-    def parse(self, response):
+    def parse (self, response, **kwargs):
         for product in response.css('div[data-asin]'):
             quote_item = Product()
             asin = product.css('div::attr(data-asin)').extract()
