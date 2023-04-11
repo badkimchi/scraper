@@ -29,17 +29,20 @@ class AmazonSpider(scrapy.Spider):
 
             # get prices
             prices = product.css('span[class="a-offscreen"]')
-            price_current = 0
-            price_before = 0
+            price_current = price_before = 0
+            discounted = False
+            
+            
             for idx, p in enumerate(prices):
                 text = p.css('span::text').get()
                 if idx == 0:
                     price_current = text
                 else:
                     price_before = text
+                    discounted = True
             
             # title of the product
-            product_name = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
+            title = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
             
             # package composition such as 150 count
             package = product.css('span[class="a-size-base a-color-information a-text-bold"]::text').get()
@@ -62,12 +65,16 @@ class AmazonSpider(scrapy.Spider):
                     continue
                 review_cnt = a.css('a span::text').get()
                     
+            thumbnail_url = ''
+            for img_tag in product.css('img[srcset]'):
+                thumbnail_url = img_tag.css('img::attr(src)').get()
             
             quote_item['id'] = asin
-            quote_item['product_name'] = product_name
-            quote_item['price_current'] = price_current
-            quote_item['price_before'] = price_before
+            quote_item['title'] = title
+            quote_item['thumbnail_url'] = thumbnail_url
             quote_item['package'] = package
             quote_item['rating'] = rating
             quote_item['review_cnt'] = review_cnt
+            quote_item['price_current'] = price_current
+            quote_item['price_before'] = price_before
             yield quote_item
