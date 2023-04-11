@@ -11,5 +11,9 @@ class Product(scrapy.Item):
     id = scrapy.Field()
     price_current = scrapy.Field()
     price_before = scrapy.Field()
+    product_name = scrapy.Field()
+    package = scrapy.Field()
+    rating = scrapy.Field()
+    review_cnt = scrapy.Field()
 
     

@@ -18,16 +18,17 @@ class AmazonSpider(scrapy.Spider):
         yield scrapy.Request(url, meta={'playwright': True})
 
     def parse(self, response):
-        for quote in response.css('div[data-asin]'):
+        for product in response.css('div[data-asin]'):
             quote_item = Product()
-            asin = quote.css('div::attr(data-asin)').extract()
+            asin = product.css('div::attr(data-asin)').extract()
             
             # ignore wrapper div that contains multiple asins
             # ignore div with empty asin
             if len(asin) > 1 or not len(asin[0]):
                 continue
 
-            prices = quote.css('span[class="a-offscreen"]')
+            # get prices
+            prices = product.css('span[class="a-offscreen"]')
             price_current = 0
             price_before = 0
             for idx, p in enumerate(prices):
@@ -36,8 +37,37 @@ class AmazonSpider(scrapy.Spider):
                     price_current = text
                 else:
                     price_before = text
-                
+            
+            # title of the product
+            product_name = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
+            
+            # package composition such as 150 count
+            package = product.css('span[class="a-size-base a-color-information a-text-bold"]::text').get()
+
+            rating = '0'
+            for span in product.css('span[aria-label]'):
+                ratings = span.css('span::attr(aria-label)').extract()
+                # there should be one label
+                if len(ratings) < 0:
+                    continue
+                if "of 5 stars" in ratings[0]:
+                    rating = ratings[0]
+                    
+            review_cnt = 0
+            for a in product.css('a[href]'):
+                hrefs = a.css('a::attr(href)').extract()
+                if len(hrefs) < 0:
+                    continue
+                if "#customerReviews" not in hrefs[0]:
+                    continue
+                review_cnt = a.css('a span::text').get()
+                    
+            
             quote_item['id'] = asin
+            quote_item['product_name'] = product_name
             quote_item['price_current'] = price_current
             quote_item['price_before'] = price_before
+            quote_item['package'] = package
+            quote_item['rating'] = rating
+            quote_item['review_cnt'] = review_cnt
             yield quote_item
