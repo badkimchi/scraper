@@ -1,5 +1,6 @@
 import scrapy
-from amazon_scraper.items import Product
+from scraper.items import Product
+
 
 # use the initial document only and prevent further download of anything else.
 def should_abort_request(request):
@@ -13,9 +14,12 @@ class AmazonSpider(scrapy.Spider):
         'PLAYWRIGHT_ABORT_REQUEST': should_abort_request
     }
 
-    def __init__ (self, keyword = '', *args, **kwargs):
+    def __init__ (self, keyword = '', data = None, *args, **kwargs):
         super(AmazonSpider, self).__init__(*args, **kwargs)
         self.keyword = keyword
+        if data is None:
+            data = []
+        self.data = data
 
     def start_requests(self):
         keyword = 'vitamin c'
@@ -37,8 +41,6 @@ class AmazonSpider(scrapy.Spider):
             # get prices
             prices = product.css('span[class="a-offscreen"]')
             price_current = price_before = 0
-            discounted = False
-            
             
             for idx, p in enumerate(prices):
                 text = p.css('span::text').get()
@@ -46,7 +48,6 @@ class AmazonSpider(scrapy.Spider):
                     price_current = text
                 else:
                     price_before = text
-                    discounted = True
             
             # title of the product
             title = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
@@ -84,4 +85,6 @@ class AmazonSpider(scrapy.Spider):
             quote_item['review_cnt'] = review_cnt
             quote_item['price_current'] = price_current
             quote_item['price_before'] = price_before
+            self.data.append(quote_item)
             yield quote_item
+
