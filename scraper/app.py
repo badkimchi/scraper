@@ -1,4 +1,4 @@
-from scraper.amazon import Amazon
+from amazon import Amazon
 from fastapi import FastAPI
 
 import nest_asyncio

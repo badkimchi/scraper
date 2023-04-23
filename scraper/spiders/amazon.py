@@ -19,7 +19,7 @@ class AmazonSpider(scrapy.Spider):
         super(AmazonSpider, self).__init__(*args, **kwargs)
     
         self.keyword = 'vitamin c'
-        if 'search' in search and len(search['keyword']) > 0:
+        if 'keyword' in search and len(search['keyword']) > 0:
             self.keyword = search['keyword']
 
         self.country = 'us'
