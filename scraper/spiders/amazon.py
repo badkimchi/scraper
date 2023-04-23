@@ -73,8 +73,9 @@ class AmazonSpider(scrapy.Spider):
                 # there should be one label
                 if len(ratings) < 0:
                     continue
-                if "of 5 stars" in ratings[0]:
-                    rating = ratings[0]
+                if "out of" in ratings[0]:
+                    raw_str = ratings[0]
+                    rating = raw_str[0:raw_str.index('out of') - 1]
                     
             review_cnt = 0
             for a in product.css('a[href]'):
@@ -93,7 +94,7 @@ class AmazonSpider(scrapy.Spider):
             quote_item['title'] = title
             quote_item['thumbnail_url'] = thumbnail_url
             quote_item['package'] = package
-            quote_item['rating'] = rating[0:rating.index('out of') - 1]
+            quote_item['rating'] = rating
             quote_item['review_cnt'] = review_cnt.replace(',', '')
             quote_item['price_current'] = re.sub('[^0-9.]+', '', price_current)
             quote_item['price_before'] = re.sub('[^0-9.]+', '', price_before)
