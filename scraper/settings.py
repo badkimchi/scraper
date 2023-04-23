@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = 'scraper.spiders'
 
 # settings.py
 
-LOG_ENABLED=0
+# LOG_ENABLED=0
 
 DOWNLOAD_HANDLERS = {
     "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",

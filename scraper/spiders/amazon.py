@@ -1,4 +1,5 @@
 import scrapy
+import re
 from scraper.items import Product
 
 
@@ -14,20 +15,27 @@ class AmazonSpider(scrapy.Spider):
         'PLAYWRIGHT_ABORT_REQUEST': should_abort_request
     }
 
-    def __init__ (self, keyword = '', data = None, *args, **kwargs):
+    def __init__ (self, search, data = None, *args, **kwargs):
         super(AmazonSpider, self).__init__(*args, **kwargs)
-        self.keyword = keyword
+        self.search = search
         if data is None:
             data = []
         self.data = data
 
     def start_requests(self):
         keyword = 'vitamin c'
-        if len(self.keyword) > 0:
-            keyword = self.keyword
-        url = f'https://www.amazon.com/s?k={keyword}&s=exact-aware-popularity-rank&page=1'
+        if len(self.search['keyword']) > 0:
+            keyword = self.search['keyword']
+            
+        url = f'{self.get_domain()}/s?k={keyword}&s=exact-aware-popularity-rank&page=1'
         yield scrapy.Request(url, meta={'playwright': True})
-
+    
+    def get_domain(self):
+        domain = 'https://www.amazon.com'
+        if self.search['country'] == 'jp':
+            domain = 'https://www.amazon.co.jp'
+        return domain
+    
     def parse (self, response, **kwargs):
         for product in response.css('div[data-asin]'):
             quote_item = Product()
@@ -77,13 +85,13 @@ class AmazonSpider(scrapy.Spider):
             for img_tag in product.css('img[srcset]'):
                 thumbnail_url = img_tag.css('img::attr(src)').get()
             
-            quote_item['id'] = asin
+            quote_item['id'] = asin[0]
             quote_item['title'] = title
             quote_item['thumbnail_url'] = thumbnail_url
             quote_item['package'] = package
             quote_item['rating'] = rating
-            quote_item['review_cnt'] = review_cnt
-            quote_item['price_current'] = price_current
+            quote_item['review_cnt'] = review_cnt.replace(',', '')
+            quote_item['price_current'] = re.sub('[^0-9.]+', '', price_current)
             quote_item['price_before'] = price_before
             self.data.append(quote_item)
             yield quote_item

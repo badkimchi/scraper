@@ -9,4 +9,4 @@ app = FastAPI()
 
 @app.get("/", tags = ['ROOT'])
 async def root() -> list:
-    return Amazon.scrape('iron')
+    return Amazon.scrape('tmg', 'us')

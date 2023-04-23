@@ -7,12 +7,10 @@ from multiprocessing import Process, Queue
 class Amazon:
     
     @staticmethod
-    def scrape(keyword) -> list:
-        if len(keyword) < 1:
-            keyword = 'vitamin c'
-            
+    def scrape(keyword = 'vitamin c', country = 'us') -> list:
         q = Queue()
-        q.put(keyword)
+        search = {"keyword": keyword, "country": country}
+        q.put(search)
         p = Process(target = crawl, args = (q,))
         p.start()
         p.join()
@@ -23,10 +21,10 @@ class Amazon:
 
 
 def crawl(queue) -> list:
-    keyword = queue.get()
+    search = queue.get()
     process = CrawlerProcess(get_project_settings())
     data = []
-    process.crawl(AmazonSpider, keyword = keyword, data = data)
+    process.crawl(AmazonSpider, search = search, data = data)
     process.start()
     queue.put(data)
     return data
