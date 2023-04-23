@@ -17,22 +17,26 @@ class AmazonSpider(scrapy.Spider):
 
     def __init__ (self, search, data = None, *args, **kwargs):
         super(AmazonSpider, self).__init__(*args, **kwargs)
-        self.search = search
+    
+        self.keyword = 'vitamin c'
+        if 'search' in search and len(search['keyword']) > 0:
+            self.keyword = search['keyword']
+
+        self.country = 'us'
+        if 'country' in search and len(search['country']) > 0:
+            self.country = search['country']
+
         if data is None:
             data = []
         self.data = data
 
     def start_requests(self):
-        keyword = 'vitamin c'
-        if len(self.search['keyword']) > 0:
-            keyword = self.search['keyword']
-            
-        url = f'{self.get_domain()}/s?k={keyword}&s=exact-aware-popularity-rank&page=1'
+        url = f'{self.get_domain()}/s?k={self.keyword}&s=exact-aware-popularity-rank&page=1'
         yield scrapy.Request(url, meta={'playwright': True})
     
     def get_domain(self):
         domain = 'https://www.amazon.com'
-        if self.search['country'] == 'jp':
+        if self.country == 'jp':
             domain = 'https://www.amazon.co.jp'
         return domain
     
@@ -48,7 +52,7 @@ class AmazonSpider(scrapy.Spider):
 
             # get prices
             prices = product.css('span[class="a-offscreen"]')
-            price_current = price_before = 0
+            price_current = price_before = ''
             
             for idx, p in enumerate(prices):
                 text = p.css('span::text').get()
@@ -89,10 +93,10 @@ class AmazonSpider(scrapy.Spider):
             quote_item['title'] = title
             quote_item['thumbnail_url'] = thumbnail_url
             quote_item['package'] = package
-            quote_item['rating'] = rating
+            quote_item['rating'] = rating[0:rating.index('out of') - 1]
             quote_item['review_cnt'] = review_cnt.replace(',', '')
             quote_item['price_current'] = re.sub('[^0-9.]+', '', price_current)
-            quote_item['price_before'] = price_before
+            quote_item['price_before'] = re.sub('[^0-9.]+', '', price_before)
             self.data.append(quote_item)
             yield quote_item
 
