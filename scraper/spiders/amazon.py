@@ -77,7 +77,7 @@ class AmazonSpider(scrapy.Spider):
                     raw_str = ratings[0]
                     rating = raw_str[0:raw_str.index('out of') - 1]
                     
-            review_cnt = 0
+            review_cnt = ''
             for a in product.css('a[href]'):
                 hrefs = a.css('a::attr(href)').extract()
                 if len(hrefs) < 0:
