@@ -7,7 +7,7 @@ from multiprocessing import Process, Queue
 class Amazon:
     
     @staticmethod
-    def scrape(keyword = 'tmg', country = 'us') -> list:
+    def scrape(keyword = 'tmg', country = 'us'):
         q = Queue()
         search = {"keyword": keyword, "country": country}
         q.put(search)

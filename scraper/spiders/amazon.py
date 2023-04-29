@@ -9,30 +9,31 @@ def should_abort_request(request):
         return True
     return False
 
+
 class AmazonSpider(scrapy.Spider):
     name = 'amazon'
     custom_settings = {
         'PLAYWRIGHT_ABORT_REQUEST': should_abort_request
     }
-
-    def __init__ (self, search, data = None, *args, **kwargs):
-        super(AmazonSpider, self).__init__(*args, **kwargs)
     
+    def __init__(self, search, data = None, *args, **kwargs):
+        super(AmazonSpider, self).__init__(*args, **kwargs)
+        
         self.keyword = 'vitamin c'
         if 'keyword' in search and len(search['keyword']) > 0:
             self.keyword = search['keyword']
-
+        
         self.country = 'us'
         if 'country' in search and len(search['country']) > 0:
             self.country = search['country']
-
+        
         if data is None:
             data = []
         self.data = data
-
+    
     def start_requests(self):
         url = f'{self.get_domain()}/s?k={self.keyword}&s=exact-aware-popularity-rank&page=1'
-        yield scrapy.Request(url, meta={'playwright': True})
+        yield scrapy.Request(url, meta = {'playwright': True})
     
     def get_domain(self):
         domain = 'https://www.amazon.com'
@@ -40,16 +41,20 @@ class AmazonSpider(scrapy.Spider):
             domain = 'https://www.amazon.co.jp'
         return domain
     
-    def parse (self, response, **kwargs):
+    def parse(self, response, **kwargs):
         for product in response.css('div[data-asin]'):
+            
+            # warning: this value is only used as a scrape result for scrapy
+            # it is not actually passed to the scrape results to the caller
             quote_item = Product()
+            
             asin = product.css('div::attr(data-asin)').extract()
             
             # ignore wrapper div that contains multiple asins
             # ignore div with empty asin
             if len(asin) > 1 or not len(asin[0]):
                 continue
-
+            
             # get prices
             prices = product.css('span[class="a-offscreen"]')
             price_current = price_before = ''
@@ -66,7 +71,7 @@ class AmazonSpider(scrapy.Spider):
             
             # package composition such as 150 count
             package = product.css('span[class="a-size-base a-color-information a-text-bold"]::text').get()
-
+            
             rating = '0'
             for span in product.css('span[aria-label]'):
                 ratings = span.css('span::attr(aria-label)').extract()
@@ -76,7 +81,7 @@ class AmazonSpider(scrapy.Spider):
                 if "out of" in ratings[0]:
                     raw_str = ratings[0]
                     rating = raw_str[0:raw_str.index('out of') - 1]
-                    
+            
             review_cnt = ''
             for a in product.css('a[href]'):
                 hrefs = a.css('a::attr(href)').extract()
@@ -85,19 +90,19 @@ class AmazonSpider(scrapy.Spider):
                 if "#customerReviews" not in hrefs[0]:
                     continue
                 review_cnt = a.css('a span::text').get()
-                    
+            
             thumbnail_url = ''
             for img_tag in product.css('img[srcset]'):
                 thumbnail_url = img_tag.css('img::attr(src)').get()
             
-            quote_item['id'] = asin[0]
-            quote_item['title'] = title
-            quote_item['thumbnail_url'] = thumbnail_url
-            quote_item['package'] = package
-            quote_item['rating'] = rating
-            quote_item['review_cnt'] = review_cnt.replace(',', '')
-            quote_item['price_current'] = re.sub('[^0-9.]+', '', price_current)
-            quote_item['price_before'] = re.sub('[^0-9.]+', '', price_before)
-            self.data.append(quote_item)
+            self.data.append({
+                'id': asin[0],
+                'title': title,
+                'thumbnail_url': thumbnail_url,
+                'package': package,
+                'rating': rating,
+                'review_cnt': review_cnt.replace(',', ''),
+                'price_current': re.sub('[^0-9.]+', '', price_current),
+                'price_before': re.sub('[^0-9.]+', '', price_before),
+            })
             yield quote_item
-

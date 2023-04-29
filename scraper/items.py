@@ -2,7 +2,6 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/items.html
-from json import JSONEncoder
 
 import scrapy
 
@@ -17,7 +16,3 @@ class Product(scrapy.Item):
     review_cnt = scrapy.Field()
     price_current = scrapy.Field()
     price_before = scrapy.Field()
-
-class ProductEncoder(JSONEncoder):
-    def default(self, o: Product) -> dict:
-        return o.__dict__['_values']
