@@ -10,6 +10,14 @@ COPY ./scraper /code/scraper
 
 CMD ["playwright", "install"]
 
-CMD ["uvicorn", "scraper.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python3", "/code/scraper/main.py"]
 
-# docker run -it -p 80:80 -v /tmp /tmp {image-name}
+
+
+# install docker
+# https://docs.docker.com/engine/install/ubuntu/
+
+# clone source
+
+# docker build -t scraper .
+# docker run -it -p 80:80 -v /tmp:/tmp scraper
