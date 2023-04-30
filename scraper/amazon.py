@@ -1,6 +1,6 @@
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
-from scraper.spiders.amazon import AmazonSpider
+from spiders.amazon import AmazonSpider
 from multiprocessing import Process, Queue
 
 

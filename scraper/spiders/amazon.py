@@ -1,6 +1,5 @@
 import scrapy
 import re
-from scraper.items import Product
 
 
 # use the initial document only and prevent further download of anything else.
@@ -106,3 +105,15 @@ class AmazonSpider(scrapy.Spider):
                 'price_before': re.sub('[^0-9.]+', '', price_before),
             })
             yield quote_item
+
+
+class Product(scrapy.Item):
+    # define the fields for your item here like:
+    id = scrapy.Field()
+    # title = scrapy.Field()
+    # thumbnail_url = scrapy.Field()
+    # package = scrapy.Field()
+    # rating = scrapy.Field()
+    # review_cnt = scrapy.Field()
+    # price_current = scrapy.Field()
+    # price_before = scrapy.Field()
