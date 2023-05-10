@@ -17,18 +17,31 @@ class AmazonSpider(scrapy.Spider):
     
     def __init__(self, search, data = None, *args, **kwargs):
         super(AmazonSpider, self).__init__(*args, **kwargs)
-        
+
         self.keyword = 'vitamin c'
         if 'keyword' in search and len(search['keyword']) > 0:
             self.keyword = search['keyword']
-        
+
         self.country = 'us'
         if 'country' in search and len(search['country']) > 0:
             self.country = search['country']
-        
+
         if data is None:
             data = []
         self.data = data
+    
+    # # for debugging
+    # # /opt/homebrew/lib/python3.11/site-packages/scrapy/cmdline.py
+    # # crawl amazon
+    # # https://htmledit.squarefree.com/
+    # def __init__(self, data = None, *args, **kwargs):
+    #     super(AmazonSpider, self).__init__(*args, **kwargs)
+    #     self.keyword = 'vitamin c'
+    #     self.country = 'jp'
+    #
+    #     if data is None:
+    #         data = []
+    #     self.data = data
     
     def start_requests(self):
         url = f'{self.get_domain()}/s?k={self.keyword}&s=exact-aware-popularity-rank&page=1'
@@ -65,7 +78,7 @@ class AmazonSpider(scrapy.Spider):
                     continue
                 if len(text) > 0:
                     price_before = re.sub('[^0-9.]+', '', text)
-                    
+            
             try:
                 price_current = float(price_current)
                 price_before = float(price_before)
@@ -79,14 +92,15 @@ class AmazonSpider(scrapy.Spider):
             package = product.css('span[class="a-size-base a-color-information a-text-bold"]::text').get()
             
             rating = '0'
-            for span in product.css('span[aria-label]'):
-                ratings = span.css('span::attr(aria-label)').extract()
-                # there should be one label
-                if len(ratings) < 0:
-                    continue
-                if "out of" in ratings[0]:
-                    raw_str = ratings[0]
-                    rating = raw_str[0:raw_str.index('out of') - 1]
+            for span in product.css('span'):
+                text = span.css('span::text').get()
+                # us
+                if text and "out of" in text and "stars" in text:
+                    rating = text[0:text.index('out of') - 1]
+                # jp
+                if text and "つ星のうち" in text:
+                    rating = text[len('5つ星のうち'):]
+            
             try:
                 rating = float(rating)
             except Exception:
