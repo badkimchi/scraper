@@ -61,9 +61,16 @@ class AmazonSpider(scrapy.Spider):
             for idx, p in enumerate(prices):
                 text = p.css('span::text').get()
                 if idx == 0:
-                    price_current = text
-                else:
-                    price_before = text
+                    price_current = re.sub('[^0-9.]+', '', text)
+                    continue
+                if len(text) > 0:
+                    price_before = re.sub('[^0-9.]+', '', text)
+                    
+            try:
+                price_current = float(price_current)
+                price_before = float(price_before)
+            except Exception:
+                pass
             
             # title of the product
             title = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
@@ -80,6 +87,10 @@ class AmazonSpider(scrapy.Spider):
                 if "out of" in ratings[0]:
                     raw_str = ratings[0]
                     rating = raw_str[0:raw_str.index('out of') - 1]
+            try:
+                rating = float(rating)
+            except Exception:
+                pass
             
             review_cnt = ''
             for a in product.css('a[href]'):
@@ -89,6 +100,10 @@ class AmazonSpider(scrapy.Spider):
                 if "#customerReviews" not in hrefs[0]:
                     continue
                 review_cnt = a.css('a span::text').get()
+            try:
+                review_cnt = int(review_cnt.replace(',', ''))
+            except Exception:
+                pass
             
             thumbnail_url = ''
             for img_tag in product.css('img[srcset]'):
@@ -96,13 +111,14 @@ class AmazonSpider(scrapy.Spider):
             
             self.data.append({
                 'id': asin[0],
+                'url': self.get_domain() + '/dp/' + asin[0],
                 'title': title,
                 'thumbnail_url': thumbnail_url,
                 'package': package,
                 'rating': rating,
-                'review_cnt': review_cnt.replace(',', ''),
-                'price_current': re.sub('[^0-9.]+', '', price_current),
-                'price_before': re.sub('[^0-9.]+', '', price_before),
+                'review_cnt': review_cnt,
+                'price_current': price_current,
+                'price_before': price_before,
             })
             yield quote_item
 

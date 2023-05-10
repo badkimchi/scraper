@@ -7,6 +7,10 @@ import nest_asyncio
 nest_asyncio.apply()
 app = FastAPI()
 base_storage = '/tmp/search/'
+isExist = os.path.exists(base_storage)
+if not isExist:
+    os.makedirs(base_storage)
+    print("The new directory is created!")
 
 
 @app.get("/", tags = ['ROOT'])
