@@ -31,7 +31,8 @@ async def supplement_search(keyword: str, update_cache: bool = False, country_co
         if os.path.isfile(file_path) and update_cache is False:
             f = open(file_path)
             data = json.load(f)
-            return {'data': data, 'success': True}
+            stat = os.stat(file_path)
+            return {'data': data, 'success': True, 'last_updated': stat.st_mtime}
     except Exception:
         os.remove(file_path)
         return {'data': IOError, 'success': False}
@@ -60,6 +61,6 @@ async def supplement_search(keyword: str, update_cache: bool = False, country_co
     except Exception:
         return {'data': Exception, 'success': False}
     
-    return {'data': result, 'success': True}
+    return {'data': result, 'success': True, 'last_updated': time.time()}
 
 # todo price tracker
