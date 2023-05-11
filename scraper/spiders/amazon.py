@@ -83,7 +83,7 @@ class AmazonSpider(scrapy.Spider):
                 price_current = float(price_current)
                 price_before = float(price_before)
             except Exception:
-                pass
+                price_before = 0
             
             # title of the product
             title = product.css('span[class="a-size-base-plus a-color-base a-text-normal"]::text').get()
