@@ -127,12 +127,12 @@ class AmazonSpider(scrapy.Spider):
                 'id': asin[0],
                 'url': self.get_domain() + '/dp/' + asin[0],
                 'title': title,
-                'thumbnail_url': thumbnail_url,
+                'thumbnailUrl': thumbnail_url,
                 'package': package,
                 'rating': rating,
-                'review_cnt': review_cnt,
-                'price_current': price_current,
-                'price_before': price_before,
+                'reviewCnt': review_cnt,
+                'priceCurrent': price_current,
+                'priceBefore': price_before,
             })
             yield quote_item
 
