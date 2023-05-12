@@ -133,6 +133,7 @@ class AmazonSpider(scrapy.Spider):
                 'reviewCnt': review_cnt,
                 'priceCurrent': price_current,
                 'priceBefore': price_before,
+                'currency': '$' if self.country == 'us' else '¥',
             })
             yield quote_item
 
