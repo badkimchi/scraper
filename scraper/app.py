@@ -3,10 +3,10 @@ import os.path
 import time
 
 from amazon import Amazon
+from iherb import Iherb
 from fastapi import FastAPI
 import nest_asyncio
 
-from scraper.iherb import Iherb
 
 nest_asyncio.apply()
 app = FastAPI()
@@ -60,18 +60,20 @@ async def supplement_search(keyword: str, update_cache: bool = False, country_co
                            (request_cooldown - sec_since_last_req)}
     
     # search
+    res_amazon = []
     try:
         res_amazon = Amazon.scrape(keyword, country_code)
         app.last_scrape_request = time.time()
     except Exception:
-        return {'data': Exception, 'success': False}
+        pass
     
     # search
+    res_iherb = []
     try:
         res_iherb = Iherb.scrape(keyword, country_code)
         app.last_scrape_request = time.time()
     except Exception:
-        return {'data': Exception, 'success': False}
+        pass
     
     res_comb = res_amazon + res_iherb
     
